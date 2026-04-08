@@ -102,42 +102,99 @@ router.get('/:id', (req, res) => {
 // ==============================================
 
 router.post('/', (req, res) => {
-console.log(req.body);
+    console.log(req.body);
 
-const {error} = validateCreateBook(req.body)
-  
-if(error){
-    return res.status(400).json({message: error.details[0].message})
-}
+    const { error } = validateCreateBook(req.body)
 
-   const newBook ={
-    id:books.length +1,
-    title: req.body.title,
-    author: req.body.author,
-    description: req.body.description,
-    price: req.body.price,
-    
-   }
-books.push(newBook);
+    if (error) {
+        return res.status(400).json({ message: error.details[0].message })
+    }
 
-res.status(201).json(newBook)
+    const newBook = {
+        id: books.length + 1,
+        title: req.body.title,
+        author: req.body.author,
+        description: req.body.description,
+        price: req.body.price,
+
+    }
+    books.push(newBook);
+
+    res.status(201).json(newBook)
 
 })
+// =====================================
+router.put('/:id', (req, res) => {
+
+    const { error } = validateUpdateBook(req.body);
+
+
+    if (error) {
+
+        return res.status(400).json({ message: error.details[0].message })
+    }
+
+
+    const book = books.find(b => b.id === parseInt(req.params.id))
+    if (book) {
+        res.status(200).json({ message: 'Book has been updated' })
+    }
+    else {
+        res.status(404).json({ message: 'Book not Found!!' })
+
+    }
+
+
+})
+
+
+// =====================================
+router.delete('/:id', (req, res) => {
+
+   
+    const book = books.find(b => b.id === parseInt(req.params.id))
+    if (book) {
+        res.status(200).json({ message: 'Book has been deleted' })
+    }
+    else {
+        res.status(404).json({ message: 'Book not Found!!' })
+
+    }
+
+
+})
+
+
 // =====================================
 
 // Validation
 
-function validateCreateBook(obj){
+function validateCreateBook(obj) {
 
-    
 
-   const schema = Joi.object({
-    title: Joi.string().trim().min(3).max(200).required(),
-    author: Joi.string().trim().min(3).max(200).required(),
-    description: Joi.string().trim().min(3).max(500).required(),
-    price: Joi.number().min(0).required(),
-   })
-return  schema.validate(obj);
+
+    const schema = Joi.object({
+        title: Joi.string().trim().min(3).max(200).required(),
+        author: Joi.string().trim().min(3).max(200).required(),
+        description: Joi.string().trim().min(3).max(500).required(),
+        price: Joi.number().min(0).required(),
+    })
+    return schema.validate(obj);
+
+
+}
+// =====================================
+function validateUpdateBook(obj) {
+
+
+
+    const schema = Joi.object({
+        title: Joi.string().trim().min(3).max(200),
+        author: Joi.string().trim().min(3).max(200),
+        description: Joi.string().trim().min(3).max(500),
+        price: Joi.number().min(0),
+    })
+    return schema.validate(obj);
 
 
 }

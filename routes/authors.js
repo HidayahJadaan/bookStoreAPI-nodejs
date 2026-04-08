@@ -1,0 +1,198 @@
+const express = require('express')
+const Joi = require('joi')
+const router = express.Router();
+
+const { Author } = require('../models/author')
+
+// =====================================
+
+const authors = [
+    {
+        id: 1,
+        firstName: "Hedaia",
+        lastName: "Khalil",
+        nationality: "Jordanian",
+        image: "defualt-image.png",
+    },
+]
+
+
+// ======================================
+router.get('/', async(req, res) => {
+
+    // res.status(200).json(authors)
+
+// const authorsList = await Author.find();
+// res.status(200).json(authorsList)
+
+try {
+    const authorsList = await Author.find();
+    res.status(200).json(authorsList)
+} catch (error) {
+    
+console.log(error);
+res.status(500).json({message:"Something went wrong"})
+
+
+}
+
+})// ======================================
+router.get('/:id', async(req, res) => {
+
+    // parsInt to convert value from string to int
+    // const author = authors.find(author => author.id === parseInt(req.params.id))
+
+try {
+    
+    const author = await Author.findById(req.params.id)
+       if (author)
+        res.status(200).json(author)
+    else
+        res.status(404).json({ message: 'author not Found!!' })
+} catch (error) {
+    res.status(500).json({message:"Something went wrong"})
+
+}
+    // if (author)
+    //     res.status(200).json(author)
+    // else
+    //     res.status(404).json({ message: 'author not Found!!' })
+
+
+
+})// ======================================
+
+router.post('/', async (req, res) => {
+    console.log(req.body);
+
+    const { error } = validateCreateAuthor(req.body)
+
+    if (error) {
+        return res.status(400).json({ message: error.details[0].message })
+    }
+
+    try {
+        const author = new Author(
+            {
+                // id: authors.length + 1,
+                firstName: req.body.firstName,
+                lastName: req.body.lastName,
+                nationality: req.body.nationality,
+                image: req.body.image,
+
+
+            }
+        )
+        // authors.push(author);
+        const result = await author.save();
+
+        // res.status(201).json(author)
+        res.status(201).json(result)
+
+    } catch (error) {
+
+        console.log(error);
+        res.status(500).json({ message: "Somthing went errror" })
+    }
+})
+// ======================================
+router.put('/:id',async (req, res) => {
+
+    const { error } = validateUpdateAuthor(req.body);
+
+
+    if (error) {
+
+        return res.status(400).json({ message: error.details[0].message })
+    }
+
+
+    // const author = authors.find(b => b.id === parseInt(req.params.id))
+    // if (author) {
+    //     res.status(200).json({ message: 'author has been updated' })
+    // }
+    // else {
+    //     res.status(404).json({ message: 'author not Found!!' })
+
+    // }
+
+
+try {
+    const author = await Author.findByIdAndUpdate(req.params.id, {
+    $set:{
+        firstName:req.body.firstName,
+        lastName:req.body.lastName,
+        nationality:req.body.nationality,
+        image:req.body.image,
+    }
+}, {new: true})
+
+
+res.status(200).json(author)
+
+} catch (error) {
+        res.status(500).json({message:"Something went wrong"})
+
+}
+
+
+
+})
+// ======================================
+router.delete('/:id', (req, res) => {
+
+
+    const author = authors.find(b => b.id === parseInt(req.params.id))
+    if (author) {
+        res.status(200).json({ message: 'author has been deleted' })
+    }
+    else {
+        res.status(404).json({ message: 'author not Found!!' })
+
+    }
+
+
+})
+
+// ==================================================
+
+// Validation
+
+function validateCreateAuthor(obj) {
+
+
+
+    const schema = Joi.object({
+        firstName: Joi.string().trim().min(3).max(200).required(),
+        lastName: Joi.string().trim().min(3).max(200).required(),
+        nationality: Joi.string().trim().min(3).max(200).required(),
+        image: Joi.string(),
+    })
+    return schema.validate(obj);
+
+
+}
+// =====================================
+function validateUpdateAuthor(obj) {
+
+
+
+    const schema = Joi.object({
+        firstName: Joi.string().trim().min(3).max(200),
+        lastName: Joi.string().trim().min(3).max(200),
+        nationality: Joi.string().trim().min(3).max(200),
+        image: Joi.string(),
+    })
+    return schema.validate(obj);
+
+
+}
+
+
+// ==================================================
+
+
+
+
+
+module.exports = router;

@@ -1,5 +1,14 @@
 const express = require('express')
 const booksPaths = require('./routes/books')
+const authorsPaths = require('./routes/authors')
+const mongoose = require('mongoose')
+
+// DB Connection
+mongoose.connect('mongodb://localhost/bookStoreDB')
+.then(()=>{console.log('Connection Succeefull')})
+.catch((error)=> console.log('Failed Connection'))
+
+
 
 
 // Init App
@@ -11,6 +20,7 @@ app.use(express.json())
 // Routess
 
 app.use('/api/books', booksPaths)
+app.use('/api/authors', authorsPaths)
 
 
 
