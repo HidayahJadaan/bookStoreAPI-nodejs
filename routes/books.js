@@ -94,7 +94,7 @@ const books = [
 // ============================================
 router.get('/', asyncHandler(async(req, res) => {
 
-    const books = await Book.find();
+    const books = await Book.find().populate("author",["_id","firstName","lastName"]);
     res.status(200).json(books)
 
 
@@ -105,7 +105,7 @@ router.get('/:id', asyncHandler(async(req, res) => {
     // parsInt to convert value from string to int
     // const book = books.find(book => book.id === parseInt(req.params.id))
 
-    const book = await Book.findById(req.params.id)
+    const book = await Book.findById(req.params.id).populate("author")
     if (book)
         res.status(200).json(book)
     else
