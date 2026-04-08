@@ -2,7 +2,15 @@ const express = require('express')
 const Joi = require('joi')
 const router = express.Router();
 
+const asyncHandler = require('express-async-handler')
+const {
+    Book,
+    validateCreateBook,
+    validateUpdateBook
+} = require('../models/book')
 
+
+// ==============================
 const books = [
     {
         "id": 1,
@@ -84,24 +92,28 @@ const books = [
 // });
 
 // ============================================
-router.get('/', (req, res) => {
+router.get('/', asyncHandler(async(req, res) => {
 
+    const books = await Book.find();
     res.status(200).json(books)
-})
+
+
+}))
 // ============================================
-router.get('/:id', (req, res) => {
+router.get('/:id', asyncHandler(async(req, res) => {
 
     // parsInt to convert value from string to int
-    const book = books.find(book => book.id === parseInt(req.params.id))
+    // const book = books.find(book => book.id === parseInt(req.params.id))
 
+    const book = await Book.findById(req.params.id)
     if (book)
         res.status(200).json(book)
     else
         res.status(404).json({ message: 'Book not Found!!' })
-})
+}))
 // ==============================================
 
-router.post('/', (req, res) => {
+router.post('/', asyncHandler(async(req, res) => {
     console.log(req.body);
 
     const { error } = validateCreateBook(req.body)
@@ -110,21 +122,26 @@ router.post('/', (req, res) => {
         return res.status(400).json({ message: error.details[0].message })
     }
 
-    const newBook = {
-        id: books.length + 1,
+    const newBook = new Book(
+        {
+        // id: books.length + 1,
         title: req.body.title,
         author: req.body.author,
         description: req.body.description,
         price: req.body.price,
+        cover: req.body.cover,
 
     }
-    books.push(newBook);
+    )
+    // books.push(newBook);
+
+    await newBook.save();
 
     res.status(201).json(newBook)
 
-})
+}))
 // =====================================
-router.put('/:id', (req, res) => {
+router.put('/:id', asyncHandler(async (req, res) => {
 
     const { error } = validateUpdateBook(req.body);
 
@@ -135,25 +152,43 @@ router.put('/:id', (req, res) => {
     }
 
 
-    const book = books.find(b => b.id === parseInt(req.params.id))
-    if (book) {
-        res.status(200).json({ message: 'Book has been updated' })
-    }
-    else {
-        res.status(404).json({ message: 'Book not Found!!' })
+    // const book = books.find(b => b.id === parseInt(req.params.id))
+    // if (book) {
+    //     res.status(200).json({ message: 'Book has been updated' })
+    // }
+    // else {
+    //     res.status(404).json({ message: 'Book not Found!!' })
 
-    }
+    // }
+
+    const updatedBook = await Book.findByIdAndUpdate(req.params.id, {
+        $set:{
+             title: req.body.title,
+        author: req.body.author,
+        description: req.body.description,
+        price: req.body.price,
+        cover: req.body.cover,
+        }
+    }, {
+        new:true
+    })
+
+    res.status(200).json(updatedBook)
 
 
-})
+}))
 
 
 // =====================================
-router.delete('/:id', (req, res) => {
+router.delete('/:id', asyncHandler(
+   async (req, res) => {
 
    
-    const book = books.find(b => b.id === parseInt(req.params.id))
+    // const book = books.find(b => b.id === parseInt(req.params.id))
+
+    const book = await Book.findById(req.params.id)
     if (book) {
+        const book = await Book.findByIdAndDelete(req.params.id)
         res.status(200).json({ message: 'Book has been deleted' })
     }
     else {
@@ -162,43 +197,11 @@ router.delete('/:id', (req, res) => {
     }
 
 
-})
+}
+))
 
 
 // =====================================
-
-// Validation
-
-function validateCreateBook(obj) {
-
-
-
-    const schema = Joi.object({
-        title: Joi.string().trim().min(3).max(200).required(),
-        author: Joi.string().trim().min(3).max(200).required(),
-        description: Joi.string().trim().min(3).max(500).required(),
-        price: Joi.number().min(0).required(),
-    })
-    return schema.validate(obj);
-
-
-}
-// =====================================
-function validateUpdateBook(obj) {
-
-
-
-    const schema = Joi.object({
-        title: Joi.string().trim().min(3).max(200),
-        author: Joi.string().trim().min(3).max(200),
-        description: Joi.string().trim().min(3).max(500),
-        price: Joi.number().min(0),
-    })
-    return schema.validate(obj);
-
-
-}
-
 
 
 // =====================================

@@ -1,9 +1,9 @@
 const express = require('express')
-const Joi = require('joi')
+
 const router = express.Router();
 
-const { Author } = require('../models/author')
-
+const { Author , validateCreateAuthor, validateUpdateAuthor} = require('../models/author')
+const asyncHandler = require('express-async-handler')
 // =====================================
 
 const authors = [
@@ -18,41 +18,37 @@ const authors = [
 
 
 // ======================================
-router.get('/', async(req, res) => {
+router.get('/', asyncHandler(
+    async (req, res) => {
 
     // res.status(200).json(authors)
 
-// const authorsList = await Author.find();
-// res.status(200).json(authorsList)
+    // const authorsList = await Author.find();
+    // res.status(200).json(authorsList)
 
-try {
-    const authorsList = await Author.find();
-    res.status(200).json(authorsList)
-} catch (error) {
     
-console.log(error);
-res.status(500).json({message:"Something went wrong"})
-
+        const authorsList = await Author.find();
+        res.status(200).json(authorsList)
+    
 
 }
-
-})// ======================================
-router.get('/:id', async(req, res) => {
+))// ======================================
+router.get('/:id', async (req, res) => {
 
     // parsInt to convert value from string to int
     // const author = authors.find(author => author.id === parseInt(req.params.id))
 
-try {
-    
-    const author = await Author.findById(req.params.id)
-       if (author)
-        res.status(200).json(author)
-    else
-        res.status(404).json({ message: 'author not Found!!' })
-} catch (error) {
-    res.status(500).json({message:"Something went wrong"})
+    try {
 
-}
+        const author = await Author.findById(req.params.id)
+        if (author)
+            res.status(200).json(author)
+        else
+            res.status(404).json({ message: 'author not Found!!' })
+    } catch (error) {
+        res.status(500).json({ message: "Something went wrong" })
+
+    }
     // if (author)
     //     res.status(200).json(author)
     // else
@@ -96,7 +92,7 @@ router.post('/', async (req, res) => {
     }
 })
 // ======================================
-router.put('/:id',async (req, res) => {
+router.put('/:id', async (req, res) => {
 
     const { error } = validateUpdateAuthor(req.body);
 
@@ -117,37 +113,45 @@ router.put('/:id',async (req, res) => {
     // }
 
 
-try {
-    const author = await Author.findByIdAndUpdate(req.params.id, {
-    $set:{
-        firstName:req.body.firstName,
-        lastName:req.body.lastName,
-        nationality:req.body.nationality,
-        image:req.body.image,
+    try {
+        const author = await Author.findByIdAndUpdate(req.params.id, {
+            $set: {
+                firstName: req.body.firstName,
+                lastName: req.body.lastName,
+                nationality: req.body.nationality,
+                image: req.body.image,
+            }
+        }, { new: true })
+
+
+        res.status(200).json(author)
+
+    } catch (error) {
+        res.status(500).json({ message: "Something went wrong" })
+
     }
-}, {new: true})
-
-
-res.status(200).json(author)
-
-} catch (error) {
-        res.status(500).json({message:"Something went wrong"})
-
-}
 
 
 
 })
 // ======================================
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
 
 
-    const author = authors.find(b => b.id === parseInt(req.params.id))
-    if (author) {
-        res.status(200).json({ message: 'author has been deleted' })
-    }
-    else {
-        res.status(404).json({ message: 'author not Found!!' })
+    // const author = authors.find(b => b.id === parseInt(req.params.id))
+    try {
+        const author = await Author.findById(req.params.id)
+        if (author) {
+            await Author.findByIdAndDelete(req.params.id)
+
+            res.status(200).json({ message: 'author has been deleted' })
+        }
+        else {
+            res.status(404).json({ message: 'author not Found!!' })
+
+        }
+    } catch (error) {
+        res.status(500).json({ message: "Something went wrong" })
 
     }
 
@@ -155,43 +159,6 @@ router.delete('/:id', (req, res) => {
 })
 
 // ==================================================
-
-// Validation
-
-function validateCreateAuthor(obj) {
-
-
-
-    const schema = Joi.object({
-        firstName: Joi.string().trim().min(3).max(200).required(),
-        lastName: Joi.string().trim().min(3).max(200).required(),
-        nationality: Joi.string().trim().min(3).max(200).required(),
-        image: Joi.string(),
-    })
-    return schema.validate(obj);
-
-
-}
-// =====================================
-function validateUpdateAuthor(obj) {
-
-
-
-    const schema = Joi.object({
-        firstName: Joi.string().trim().min(3).max(200),
-        lastName: Joi.string().trim().min(3).max(200),
-        nationality: Joi.string().trim().min(3).max(200),
-        image: Joi.string(),
-    })
-    return schema.validate(obj);
-
-
-}
-
-
-// ==================================================
-
-
 
 
 
