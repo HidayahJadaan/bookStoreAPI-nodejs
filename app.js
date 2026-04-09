@@ -1,8 +1,12 @@
 const express = require('express')
 const booksPaths = require('./routes/books')
 const authorsPaths = require('./routes/authors')
+const authPaths = require('./routes/auth')
+const usersPaths = require('./routes/users')
 const mongoose = require('mongoose')
+const logger = require('./middlewares/logger')
 const dotenv = require('dotenv')
+const { notFpund, errorHandler } = require('./middlewares/errors')
 
 dotenv.config()
 
@@ -20,16 +24,47 @@ const app = express();
 // Apply Middlewares
 app.use(express.json())
 
-app.use((req, res, next)=>{
-    // console.log("Logging...");
-    console.log(`${req.method} ${req.protocol}://${req.get('host')} ${req.originalUrl}`);
-    next()
-})
+// app.use((req, res, next)=>{
+//     // console.log("Logging...");
+//     console.log(`${req.method} ${req.protocol}://${req.get('host')} ${req.originalUrl}`);
+//     next()
+// })
+
+app.use(logger)
+
 // =====================================
 // Routess
 
 app.use('/api/books', booksPaths)
 app.use('/api/authors', authorsPaths)
+app.use('/api/auth', authPaths)
+app.use('/api/users', usersPaths)
+
+// =====================================
+// // NOT FOUND MIDDLEWARE
+// app.use((err, req,res,next)=>{
+
+//     const error= new Error(`Not Found - ${req.originalUrl}`)
+
+
+//     res.status(400);
+//     next(error);
+
+// });
+// =====================================
+// ERROR HANDLER MIDDLEWARE"
+
+// app.use((err, req,res,next)=>{
+
+//     const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+
+//     res.status(statusCode).json({message: err.message})
+
+// });
+
+app.use(notFpund)
+app.use(errorHandler)
+
 
 // =====================================
 
