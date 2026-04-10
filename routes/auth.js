@@ -42,10 +42,11 @@ router.post('/register', asyncHandler(async (req, res) => {
     })
 
     const result = await user.save();
+// const token = jwt.sign({id: user._id,isAdmin: user.isAdmin}, process.env.JWT_SECRET_KEY ,{
+//         expiresIn:"4d"
+//     });
 
-       const token = jwt.sign({id: user._id,isAdmin: user.isAdmin}, process.env.JWT_SECRET_KEY ,{
-        expiresIn:"4d"
-    });
+const token = user.generateToken();
 
     const { password, ...other } = user._doc
 
@@ -80,10 +81,11 @@ router.post('/login', asyncHandler(async (req, res) => {
     }
 
     // const token = null;
-    const token = jwt.sign({id: user._id,isAdmin: user.isAdmin}, process.env.JWT_SECRET_KEY ,{
-        expiresIn:"4d"
-    });
+    // const token = jwt.sign({id: user._id,isAdmin: user.isAdmin}, process.env.JWT_SECRET_KEY ,{
+    //     expiresIn:"4d"
+    // });
 
+const token = user.generateToken();
 
 
 

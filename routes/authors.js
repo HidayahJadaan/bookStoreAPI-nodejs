@@ -4,6 +4,8 @@ const router = express.Router();
 
 const { Author , validateCreateAuthor, validateUpdateAuthor} = require('../models/author')
 const asyncHandler = require('express-async-handler')
+const {verifyTokenAndAdmin} = require('../middlewares/verifyToken')
+
 // =====================================
 
 const authors = [
@@ -58,7 +60,7 @@ router.get('/:id', async (req, res) => {
 
 })// ======================================
 
-router.post('/', async (req, res) => {
+router.post('/', verifyTokenAndAdmin,async (req, res) => {
     console.log(req.body);
 
     const { error } = validateCreateAuthor(req.body)
@@ -92,7 +94,7 @@ router.post('/', async (req, res) => {
     }
 })
 // ======================================
-router.put('/:id', async (req, res) => {
+router.put('/:id',verifyTokenAndAdmin ,async (req, res) => {
 
     const { error } = validateUpdateAuthor(req.body);
 
@@ -135,7 +137,7 @@ router.put('/:id', async (req, res) => {
 
 })
 // ======================================
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', verifyTokenAndAdmin,async (req, res) => {
 
 
     // const author = authors.find(b => b.id === parseInt(req.params.id))

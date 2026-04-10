@@ -1,21 +1,22 @@
 const express = require('express')
-const booksPaths = require('./routes/books')
-const authorsPaths = require('./routes/authors')
-const authPaths = require('./routes/auth')
-const usersPaths = require('./routes/users')
-const mongoose = require('mongoose')
-const logger = require('./middlewares/logger')
-const dotenv = require('dotenv')
-const { notFpund, errorHandler } = require('./middlewares/errors')
+// const booksPaths = require('./routes/books')
+// const authorsPaths = require('./routes/authors')
+// const authPaths = require('./routes/auth')
+// const usersPaths = require('./routes/users')
 
-dotenv.config()
+const logger = require('./middlewares/logger')
+const dotenv = require('dotenv').config();
+const { notFpund, errorHandler } = require('./middlewares/errors')
+const connectToDB = require('./config/db')
+
+// dotenv.config()
 
 // DB Connection
-mongoose.connect(process.env.MONGO_URI)
-.then(()=>{console.log('Connection Succeefull')})
-.catch((error)=> console.log('Failed Connection'))
+// mongoose.connect(process.env.MONGO_URI)
+// .then(()=>{console.log('Connection Succeefull')})
+// .catch((error)=> console.log('Failed Connection'))
 
-
+connectToDB();
 
 
 // Init App
@@ -35,10 +36,11 @@ app.use(logger)
 // =====================================
 // Routess
 
-app.use('/api/books', booksPaths)
-app.use('/api/authors', authorsPaths)
-app.use('/api/auth', authPaths)
-app.use('/api/users', usersPaths)
+app.use('/api/books', require('./routes/books'))
+app.use('/api/authors', require('./routes/authors'))
+app.use('/api/auth', require('./routes/auth'))
+app.use('/api/users', require('./routes/users'))
+// app.use('/api/users', usersPaths)
 
 // =====================================
 // // NOT FOUND MIDDLEWARE

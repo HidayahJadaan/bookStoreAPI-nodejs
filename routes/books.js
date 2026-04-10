@@ -1,6 +1,7 @@
 const express = require('express')
 const Joi = require('joi')
 const router = express.Router();
+const {verifyTokenAndAdmin} = require('../middlewares/verifyToken')
 
 const asyncHandler = require('express-async-handler')
 const {
@@ -113,7 +114,7 @@ router.get('/:id', asyncHandler(async(req, res) => {
 }))
 // ==============================================
 
-router.post('/', asyncHandler(async(req, res) => {
+router.post('/',verifyTokenAndAdmin ,asyncHandler(async(req, res) => {
     console.log(req.body);
 
     const { error } = validateCreateBook(req.body)
@@ -141,7 +142,7 @@ router.post('/', asyncHandler(async(req, res) => {
 
 }))
 // =====================================
-router.put('/:id', asyncHandler(async (req, res) => {
+router.put('/:id', verifyTokenAndAdmin,asyncHandler(async (req, res) => {
 
     const { error } = validateUpdateBook(req.body);
 
@@ -180,7 +181,7 @@ router.put('/:id', asyncHandler(async (req, res) => {
 
 
 // =====================================
-router.delete('/:id', asyncHandler(
+router.delete('/:id', verifyTokenAndAdmin,asyncHandler(
    async (req, res) => {
 
    
