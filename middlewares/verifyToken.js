@@ -3,30 +3,62 @@ const jwt = require('jsonwebtoken');
 
 
 
-function verifyToken(req,res,next){
+function verifyToken(req, res, next) {
 
     const token = req.headers.token;
-if(token){
+    if (token) {
 
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
 
-        req.user = decoded;
-        next();
+            req.user = decoded;
+            next();
 
-        
-    } catch (error) {
-        res.status(401).json({message:"Invalid Token"})
+
+        } catch (error) {
+            res.status(401).json({ message: "Invalid Token" })
+        }
     }
+    else {
+        res.status(401).json({ message: "No Token Provided" })
+    }
+
 }
-else{
-    res.status(401).json({message:"No Token Provided"})
-}
+// =============================================
+
+function verifyTokenAndAuthorization(req, res, next) {
+    verifyToken(req, res, () => {
+
+        if (req.user.id === req.params.id || req.user.isAdmin) {
+            next();
+        } else {
+            return res.status(403).json({ message: "you are not allowed" });
+        }
+
+    })
+
 
 }
 
+// =============================================
+function verifyTokenAndAdmin(req, res, next) {
+    verifyToken(req, res, () => {
+
+         if (req.user.isAdmin) {
+            next();
+        } else {
+            return res.status(403).json({ message: "you are not allowed, only admin" });
+        }
+    })
+
+
+}
+
+// =============================================
 
 
 module.exports = {
-    verifyToken
+    verifyToken,
+    verifyTokenAndAuthorization,
+    verifyTokenAndAdmin
 }
